@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Personal Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #4a90e2, #5dd9c1);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+    .dashboard {
+      background: #ffffff;
+      width: 90%;
+      max-width: 900px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 1.2rem;
+      padding: 1.5rem;
+    }
+    header {
+      grid-column: span 2;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #4a90e2;
+    }
+    .section {
+      background: #f7f9fc;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+      height: 320px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #4a90e2;
+      font-size: 1.2rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+      margin-top: 5px;
+      margin-bottom: 8px;
+    }
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-left: 4px;
+    }
+    button:hover { background: #357ac7; }
+    .task {
+      background: #fff;
+      margin: 0.5rem 0;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .task-title { font-weight: bold; }
+    .task-note { font-size: 0.9rem; color: #555; margin-top: 0.3rem; }
+    .task-actions {
+      margin-top: 0.4rem;
+      text-align: right;
+    }
+    .time-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      height: 100%;
+    }
+    .time {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header>📋 My Personal Dashboard</header>
+
+    <!-- Daftar Tugas -->
+    <div class="section">
+      <h2>Daftar Tugas</h2>
+      <input type="text" id="taskTitle" placeholder="Judul tugas..." />
+      <textarea id="taskNote" placeholder="Catatan untuk tugas..." rows="2"></textarea>
+      <button id="addTaskBtn">Tambah Tugas</button>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- Waktu -->
+    <div class="section time-box">
+      <h2>🕓 Waktu Sekarang</h2>
+      <div class="time" id="timeDisplay">00:00:00</div>
+      <p id="dateDisplay"></p>
+    </div>
+  </div>
+
+  <script>
+    // ===== CLASS UNTUK MENGELOLA TUGAS =====
+    class TaskManager {
+      constructor() {
+        this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      }
+
+      addTask(title, note) {
+        this.tasks.push({ title, note });
+        this.save();
+      }
+
+      editTask(index, newTitle, newNote) {
+        this.tasks[index] = { title: newTitle, note: newNote };
+        this.save();
+      }
+
+      deleteTask(index) {
+        this.tasks.splice(index, 1);
+        this.save();
+      }
+
+      save() {
+        localStorage.setItem('tasks', JSON.stringify(this.tasks));
+      }
+    }
+
+    const taskManager = new TaskManager();
+    const taskList = document.getElementById('taskList');
+    const titleInput = document.getElementById('taskTitle');
+    const noteInput = document.getElementById('taskNote');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+
+    // ===== ARROW FUNCTION UNTUK RENDER =====
+    const renderTasks = () => {
+      taskList.innerHTML = '';
+      taskManager.tasks.forEach((t, index) => {
+        const item = document.createElement('div');
+        item.className = 'task';
+        item.innerHTML = `
+          <div class="task-title">${t.title}</div>
+          <div class="task-note">${t.note || '-'}</div>
+          <div class="task-actions">
+            <button onclick="editTask(${index})">Edit</button>
+            <button onclick="deleteTask(${index})">Hapus</button>
+          </div>
+        `;
+        taskList.appendChild(item);
+      });
+    };
+
+    // ===== EDIT DAN HAPUS =====
+    const deleteTask = (index) => {
+      taskManager.deleteTask(index);
+      renderTasks();
+    };
+
+    const editTask = (index) => {
+      const oldTask = taskManager.tasks[index];
+      const newTitle = prompt('Edit judul tugas:', oldTask.title);
+      const newNote = prompt('Edit catatan:', oldTask.note);
+      if (newTitle) {
+        taskManager.editTask(index, newTitle, newNote || '');
+        renderTasks();
+      }
+    };
+
+    // ===== TAMBAH TUGAS BARU =====
+    addTaskBtn.addEventListener('click', () => {
+      const title = titleInput.value.trim();
+      const note = noteInput.value.trim();
+      if (title) {
+        taskManager.addTask(title, note);
+        titleInput.value = '';
+        noteInput.value = '';
+        renderTasks();
+      }
+    });
+
+    // ===== JAM REAL-TIME (ASYNC/AWAIT) =====
+    const updateTime = async () => {
+      const timeEl = document.getElementById('timeDisplay');
+      const dateEl = document.getElementById('dateDisplay');
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const dateStr = now.toLocaleDateString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      timeEl.innerHTML = `${hours}:${minutes}:${seconds}`;
+      dateEl.innerHTML = `${dateStr}`;
+    };
+
+    // Jalankan awal
+    renderTasks();
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>
+
