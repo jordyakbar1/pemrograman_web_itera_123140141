@@ -100,7 +100,6 @@
   <div class="dashboard">
     <header>📋 My Personal Dashboard</header>
 
-    <!-- Daftar Tugas -->
     <div class="section">
       <h2>Daftar Tugas</h2>
       <input type="text" id="taskTitle" placeholder="Judul tugas..." />
@@ -109,7 +108,6 @@
       <div id="taskList"></div>
     </div>
 
-    <!-- Waktu -->
     <div class="section time-box">
       <h2>🕓 Waktu Sekarang</h2>
       <div class="time" id="timeDisplay">00:00:00</div>
@@ -118,7 +116,6 @@
   </div>
 
   <script>
-    // ===== CLASS UNTUK MENGELOLA TUGAS =====
     class TaskManager {
       constructor() {
         this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -150,7 +147,6 @@
     const noteInput = document.getElementById('taskNote');
     const addTaskBtn = document.getElementById('addTaskBtn');
 
-    // ===== ARROW FUNCTION UNTUK RENDER =====
     const renderTasks = () => {
       taskList.innerHTML = '';
       taskManager.tasks.forEach((t, index) => {
@@ -168,7 +164,6 @@
       });
     };
 
-    // ===== EDIT DAN HAPUS =====
     const deleteTask = (index) => {
       taskManager.deleteTask(index);
       renderTasks();
@@ -184,7 +179,6 @@
       }
     };
 
-    // ===== TAMBAH TUGAS BARU =====
     addTaskBtn.addEventListener('click', () => {
       const title = titleInput.value.trim();
       const note = noteInput.value.trim();
@@ -196,7 +190,7 @@
       }
     });
 
-    // ===== JAM REAL-TIME (ASYNC/AWAIT) =====
+  
     const updateTime = async () => {
       const timeEl = document.getElementById('timeDisplay');
       const dateEl = document.getElementById('dateDisplay');
@@ -211,7 +205,6 @@
       dateEl.innerHTML = `${dateStr}`;
     };
 
-    // Jalankan awal
     renderTasks();
     updateTime();
     setInterval(updateTime, 1000);
